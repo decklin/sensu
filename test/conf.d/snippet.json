@@ -5,9 +5,13 @@
       "command": "this won't override the other handlers"
     }
   },
+  "env": {
+    "NAME": "name",
+    "CUSTOM": "custom.nested.attribute",
+  },
   "checks": {
     "b": {
-      "command": "ruby -e \"puts ':::name::: :::custom.nested.attribute:::'; exit 2\"",
+      "command": "ruby -e \"puts '$NAME $CUSTOM'; exit 2\"",
       "subscribers": [
         "b"
       ],

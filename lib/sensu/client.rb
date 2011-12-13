@@ -69,8 +69,10 @@ module Sensu
           @logger.debug('[execute] -- executing check -- ' + check.name)
           @checks_in_progress.push(check.name)
           unmatched_tokens = Array.new
-          command = @settings.checks[check.name].command.gsub(/:::(.*?):::/) do
-            token = $1.to_s
+          env = Hash.new
+          command = @settings.checks[check.name].command
+          @settings.checks[check.name].env.each do |var, token|
+            unmatched_tokens.push(var) unless @settings.client.key?(var)
             begin
               value = @settings.client.instance_eval(token)
               if value.nil?
@@ -80,12 +82,12 @@ module Sensu
               value = nil
               unmatched_tokens.push(token)
             end
-            value
+            env[var] = value
           end
           if unmatched_tokens.empty?
             execute = proc do
               Bundler.with_clean_env do
-                IO.popen(command + ' 2>&1') do |io|
+                IO.popen([env, 'sh', '-c', command + ' 2>&1']) do |io|
                   check.output = io.read
                 end
               end

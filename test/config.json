@@ -38,7 +38,11 @@
   },
   "checks": {
     "a": {
-      "command": "ruby -e \"puts ':::name::: :::custom.nested.attribute:::'; exit 1\"",
+      "env": {
+        "NAME": "name",
+        "CUSTOM": "custom.nested.attribute"
+      },
+      "command": "ruby -e \"puts '$NAME $CUSTOM'; exit 1\"",
       "subscribers": [
         "a"
       ],
@@ -54,15 +58,36 @@
     },
     "c": {
       "handler": "default",
-      "command": "ruby -e \"puts ':::name::: :::custom.nested.attribute:::'; exit 3\"",
+      "env": {
+        "NAME": "name",
+        "CUSTOM": "custom.nested.attribute"
+      },
+      "command": "ruby -e \"puts '$NAME $CUSTOM'; exit 3\"",
       "standalone": true,
+      "subscribers": [
+        {
+          "name": "i-424242",
+          "!nonexistent": "test",
+          "subscribes": [
+            "a",
+            "c"
+          ],
+          "!subscribes": [
+            "d"
+          ]
+        }
+      ],
       "interval": 1
     },
     "d": {
       "handlers": [
         "default"
       ],
-      "command": "ruby -e \"puts ':::name::: :::custom.nested.attribute:::'; exit 4\"",
+      "env": {
+        "NAME": "name",
+        "CUSTOM": "custom.nested.attribute"
+      },
+      "command": "ruby -e \"puts '$NAME $CUSTOM'; exit 4\"",
       "subscribers": [
         "a",
         "b",
