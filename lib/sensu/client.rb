@@ -71,18 +71,21 @@ module Sensu
           unmatched_tokens = Array.new
           env = Hash.new
           command = @settings.checks[check.name].command
-          @settings.checks[check.name].env.each do |var, token|
-            unmatched_tokens.push(var) unless @settings.client.key?(var)
-            begin
-              value = @settings.client.instance_eval(token)
-              if value.nil?
+          if @settings.checks[check.name].env
+            @settings.checks[check.name].env.each do |var, token|
+              unmatched_tokens.push(var) unless @settings.client.key?(var)
+              begin
+                value = @settings.client.instance_eval(token)
+                if value.nil?
+                  unmatched_tokens.push(token)
+                end
+              rescue NoMethodError
+                value = nil
                 unmatched_tokens.push(token)
               end
-            rescue NoMethodError
-              value = nil
-              unmatched_tokens.push(token)
+              env[var] = value
+              env[k] = @settings.client[v].to_s
             end
-            env[var] = value
           end
           if unmatched_tokens.empty?
             execute = proc do
